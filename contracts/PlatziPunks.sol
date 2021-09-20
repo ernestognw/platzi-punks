@@ -14,6 +14,7 @@ contract PlatziPunks is ERC721, ERC721Enumerable, PunkDNA {
 
     Counters.Counter private _idCounter;
     uint256 public maxSupply;
+    mapping(uint256 => uint256) public tokenDNA;
 
     constructor(uint256 _maxSupply) ERC721("PlatziPunks", "PLPKS") {
         maxSupply = _maxSupply;
@@ -23,6 +24,7 @@ contract PlatziPunks is ERC721, ERC721Enumerable, PunkDNA {
         uint256 current = _idCounter.current();
         require(current < maxSupply, "There are no PlatziPunks left :(");
 
+        tokenDNA[current] = deterministicPseudoRandomDNA(current, msg.sender);
         _idCounter.increment();
         _safeMint(msg.sender, current);
     }
