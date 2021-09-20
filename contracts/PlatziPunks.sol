@@ -29,6 +29,55 @@ contract PlatziPunks is ERC721, ERC721Enumerable, PunkDNA {
         _safeMint(msg.sender, current);
     }
 
+    function _baseURI() internal pure override returns (string memory) {
+        return "https://avataaars.io/";
+    }
+
+    function _paramsURI(uint256 _dna) internal view returns (string memory) {
+        string memory params;
+
+        // Params are intentionally scoped to avoid Too Deep Stack error
+        {
+            params = string(
+                abi.encodePacked(
+                    "accessoriesType=",
+                    getAccessoriesType(_dna),
+                    "&clotheColor=",
+                    getClotheColor(_dna),
+                    "&clotheType=",
+                    getClotheType(_dna),
+                    "&eyeType=",
+                    getEyeType(_dna),
+                    "&eyebrowType=",
+                    getEyeBrowType(_dna),
+                    "&facialHairColor=",
+                    getFacialHairColor(_dna),
+                    "&facialHairType=",
+                    getFacialHairType(_dna),
+                    "&hairColor=",
+                    getHairColor(_dna),
+                    "&hatColor=",
+                    getHatColor(_dna),
+                    "&graphicType=",
+                    getGraphicType(_dna),
+                    "&mouthType=",
+                    getMouthType(_dna),
+                    "&skinColor=",
+                    getSkinColor(_dna)
+                )
+            );
+        }
+
+        return string(abi.encodePacked(params, "&topType=", getTopType(_dna)));
+    }
+
+    function imageByDNA(uint256 _dna) public view returns (string memory) {
+        string memory baseURI = _baseURI();
+        string memory paramsURI = _paramsURI(_dna);
+
+        return string(abi.encodePacked(baseURI, "?", paramsURI));
+    }
+
     function tokenURI(uint256 tokenId)
         public
         view
@@ -40,6 +89,9 @@ contract PlatziPunks is ERC721, ERC721Enumerable, PunkDNA {
             "ERC721Metadata: URI query for nonexistent token"
         );
 
+        uint256 dna = tokenDNA[tokenId];
+        string memory image = imageByDNA(dna);
+
         string memory json = Base64.encode(
             bytes(
                 string(
@@ -47,7 +99,7 @@ contract PlatziPunks is ERC721, ERC721Enumerable, PunkDNA {
                         '{"name": "PlatziPunk #',
                         tokenId.toString(),
                         '", "description": "Platzi Punks are randomized Avataaars stored on chain to teach DApp development on Platzi", "image": "',
-                        "// TODO: Calculate image URL"
+                        image,
                         '"}'
                     )
                 )
