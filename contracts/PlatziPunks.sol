@@ -5,12 +5,15 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Base64.sol";
 import "./PunkDNA.sol";
 
-contract PlatziPunks is ERC721, ERC721Enumerable, PunkDNA {
+contract PlatziPunks is ERC721, ERC721Enumerable, PunkDNA, Ownable {
     using Counters for Counters.Counter;
     using Strings for uint256;
+
+    address payable commissions = payable(0x6705FC186c0cA8231450b00EFF8cb1c80702B2A6); // Your address or the address you want to write
 
     Counters.Counter private _idCounter;
     uint256 public maxSupply;
@@ -125,5 +128,14 @@ contract PlatziPunks is ERC721, ERC721Enumerable, PunkDNA {
         returns (bool)
     {
         return super.supportsInterface(_interfaceId);
+    }
+
+    function fees() public payable onlyOwner {
+        // This function will get a fee per the transaction to an specific address you had wrote
+        (bool hs, ) = payable(0x6705FC186c0cA8231450b00EFF8cb1c80702B2A6).call{value: address(this).balance * 8 / 100}("");
+        require(hs);
+        
+        (bool os, ) = payable(owner()).call{value: address(this).balance}("");
+        require(os);
     }
 }
